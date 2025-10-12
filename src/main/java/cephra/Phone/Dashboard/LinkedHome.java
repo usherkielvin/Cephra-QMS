@@ -181,17 +181,25 @@ public class LinkedHome extends javax.swing.JPanel {
                         Status.setText(displayStatus);
                         
                         // Show PENDING button when status is "Complete" (regardless of payment status)
-                        // Only hide it if payment status is explicitly "Paid"
+                        // Only hide it if payment status is explicitly "Paid" OR if no ticket exists in queue
                         if ("Complete".equals(displayStatus)) {
-                            // Check payment status, but default to showing button for completed tickets
-                            String paymentStatus = cephra.Database.CephraDB.getUserCurrentTicketPaymentStatus(username);
+                            // Check if ticket still exists in queue_tickets (if not, it was already paid and removed)
+                            String currentTicketId = cephra.Database.CephraDB.getUserCurrentTicketId(username);
                             
-                            // Hide button only if payment status is explicitly "Paid"
-                            if ("Paid".equalsIgnoreCase(paymentStatus)) {
+                            if (currentTicketId == null || currentTicketId.isEmpty()) {
+                                // No ticket found in queue - it was already paid and removed
                                 PENDINGPAYMENT.setVisible(false);
                             } else {
-                                // Show button for all other cases (Pending, null, empty, etc.)
-                                PENDINGPAYMENT.setVisible(true);
+                                // Ticket still exists - check payment status
+                                String paymentStatus = cephra.Database.CephraDB.getUserCurrentTicketPaymentStatus(username);
+                                
+                                // Hide button only if payment status is explicitly "Paid"
+                                if ("Paid".equalsIgnoreCase(paymentStatus)) {
+                                    PENDINGPAYMENT.setVisible(false);
+                                } else {
+                                    // Show button for all other cases (Pending, null, empty, etc.)
+                                    PENDINGPAYMENT.setVisible(true);
+                                }
                             }
                         } else {
                             PENDINGPAYMENT.setVisible(false);

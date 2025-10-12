@@ -259,20 +259,33 @@ if ($action === 'get_status') {
             $button_href = '../Monitor/index.php';
             error_log("Status updated to in progress for $username: $status_text");
         } elseif ($queue_status === 'complete') {
-            $background_class = 'queue-pending-bg';
-            $status_text = 'Pending Payment';
-            $button_text = 'Pay Now';
-            $button_href = 'javascript:void(0)'; // Change to trigger payment popup
-            
-            // Add payment modal trigger
-            $payment_modal = [
-                'show' => true,
-                'ticket_id' => $ticket_id,
-                'service_type' => $queue_ticket['service_type'],
-                'amount' => calculateChargingAmount($queue_ticket['service_type'])
-            ];
-            
-            error_log("Status updated to pending payment for $username: $status_text");
+            // Check if payment is already completed (ticket should be removed if paid)
+            if (strtolower($queue_ticket['payment_status']) === 'paid' ||
+                strtolower($queue_ticket['payment_status']) === 'completed' ||
+                strtolower($queue_ticket['payment_status']) === 'success') {
+                // Payment already completed - ticket should have been removed
+                $background_class = 'connected-bg';
+                $status_text = 'Connected';
+                $button_text = 'Charge Now';
+                $button_href = 'ChargingPage.php';
+                error_log("Status updated to connected (payment completed) for $username: $status_text");
+            } else {
+                // Still pending payment
+                $background_class = 'queue-pending-bg';
+                $status_text = 'Pending Payment';
+                $button_text = 'Pay Now';
+                $button_href = 'javascript:void(0)'; // Change to trigger payment popup
+                
+                // Add payment modal trigger
+                $payment_modal = [
+                    'show' => true,
+                    'ticket_id' => $ticket_id,
+                    'service_type' => $queue_ticket['service_type'],
+                    'amount' => calculateChargingAmount($queue_ticket['service_type'])
+                ];
+                
+                error_log("Status updated to pending payment for $username: $status_text");
+            }
         }
 
         // Add ticket information to the response for queue states

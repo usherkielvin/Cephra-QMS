@@ -95,6 +95,18 @@ public final class QueueBridge {
     public static void reloadFromDatabase() {
         loadQueueFromDatabase();
     }
+    
+    /** Force an immediate refresh of the admin queue (useful when external payments are processed) */
+    public static void forceImmediateRefresh() {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                triggerHardRefresh();
+                System.out.println("QueueBridge: Forced immediate refresh due to external payment processing");
+            } catch (Exception e) {
+                System.err.println("QueueBridge: Error during forced refresh: " + e.getMessage());
+            }
+        });
+    }
 
     /** Add a ticket with hidden random reference number */
     public static void addTicket(String ticket, String customer, String service, String status, String payment, String action) {

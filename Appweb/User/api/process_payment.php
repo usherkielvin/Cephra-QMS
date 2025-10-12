@@ -195,6 +195,24 @@ try {
         }
     }
     
+    // CRITICAL FIX: Remove ticket from queue_tickets after payment (like other payment flows)
+    $stmt = $conn->prepare("DELETE FROM queue_tickets WHERE ticket_id = ? AND username = ?");
+    $delete_result = $stmt->execute([$ticket_id, $username]);
+    
+    if (!$delete_result) {
+        error_log("Payment: Failed to remove ticket from queue_tickets for ticket " . $ticket_id);
+        // Don't fail the transaction, but log the issue
+    } else {
+        error_log("Payment: Successfully removed ticket " . $ticket_id . " from queue_tickets after payment");
+    }
+    
+    // Also clear active_tickets if it exists (like other payment flows)
+    if ($hasActiveTable) {
+        $stmt = $conn->prepare("DELETE FROM active_tickets WHERE ticket_id = ? AND username = ?");
+        $stmt->execute([$ticket_id, $username]);
+        error_log("Payment: Cleared active_tickets for ticket " . $ticket_id);
+    }
+    
     $conn->commit();
     
     echo json_encode([

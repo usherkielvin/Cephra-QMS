@@ -82,10 +82,22 @@ elseif ($queue_ticket) {
         $button_text = 'Charge Now';
         $button_href = 'ChargingPage.php';
     } elseif (strtolower($queue_ticket['status']) === 'complete') {
-        $background_class = 'queue-pending-bg';
-        $status_text = 'Pending Payment';
-        $button_text = 'Pay Now';
-        $button_href = 'javascript:void(0)'; // Change to trigger payment popup
+        // Check if payment is already completed (ticket should be removed if paid)
+        if (strtolower($queue_ticket['payment_status']) === 'paid' ||
+            strtolower($queue_ticket['payment_status']) === 'completed' ||
+            strtolower($queue_ticket['payment_status']) === 'success') {
+            // Payment already completed - ticket should have been removed
+            $status_text = 'Connected';
+            $background_class = 'connected-bg';
+            $button_text = 'Charge Now';
+            $button_href = 'ChargingPage.php';
+        } else {
+            // Still pending payment
+            $background_class = 'queue-pending-bg';
+            $status_text = 'Pending Payment';
+            $button_text = 'Pay Now';
+            $button_href = 'javascript:void(0)'; // Change to trigger payment popup
+        }
     } elseif (strtolower($queue_ticket['status']) === 'waiting') {
         $background_class = 'waiting-bg';
         $status_text = 'Waiting';

@@ -127,6 +127,13 @@ public class LinkedCar extends javax.swing.JPanel {
                     charge.setBackground(null);
                     charge.setForeground(java.awt.Color.WHITE);
                     
+                    // Control StopCharge button visibility based on charging status
+                    if (cephra.Phone.Utilities.ChargingManager.getInstance().isCharging(username)) {
+                        StopCharge.setVisible(true);
+                    } else {
+                        StopCharge.setVisible(false);
+                    }
+                    
                     // System.out.println("PorscheTaycan: Updated battery display to " + batteryLevel + "% for user " + username);
                 }
             }
@@ -295,6 +302,9 @@ public class LinkedCar extends javax.swing.JPanel {
         for (java.awt.event.MouseListener ml : chargingTypeLabel.getMouseListeners()) {
             chargingTypeLabel.removeMouseListener(ml);
         }
+        
+        // Hide StopCharge button when not charging
+        StopCharge.setVisible(false);
     }
     
     /**
@@ -309,6 +319,9 @@ public class LinkedCar extends javax.swing.JPanel {
         for (java.awt.event.MouseListener ml : chargingTypeLabel.getMouseListeners()) {
             chargingTypeLabel.removeMouseListener(ml);
         }
+        
+        // Hide StopCharge button when charging is complete
+        StopCharge.setVisible(false);
     }
     
     // Method to get service type from ticket ID
@@ -618,6 +631,8 @@ public class LinkedCar extends javax.swing.JPanel {
                                 }
                             });
                         }
+                        // Show StopCharge button when charging
+                        StopCharge.setVisible(true);
                     } else {
                         // Reset charging type label if not charging
                         chargingTypeLabel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -625,6 +640,8 @@ public class LinkedCar extends javax.swing.JPanel {
                         for (java.awt.event.MouseListener ml : chargingTypeLabel.getMouseListeners()) {
                             chargingTypeLabel.removeMouseListener(ml);
                         }
+                        // Hide StopCharge button when not charging
+                        StopCharge.setVisible(false);
                     }
                 }
             }
@@ -792,6 +809,7 @@ public class LinkedCar extends javax.swing.JPanel {
         });
         add(StopCharge);
         StopCharge.setBounds(130, 310, 72, 23);
+        StopCharge.setVisible(false); // Hide by default
 
         jLabel2.setBackground(new java.awt.Color(204, 204, 204));
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N

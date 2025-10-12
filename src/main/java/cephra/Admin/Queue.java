@@ -425,13 +425,21 @@ private class CombinedProceedEditor extends AbstractCellEditor implements TableC
                     }
                 }
                 
+                int oldRowCount = queTab.getRowCount();
                 ((DefaultTableModel) queTab.getModel()).setRowCount(0);
                 cephra.Admin.Utilities.QueueBridge.reloadFromDatabase();
+                
+                int newRowCount = queTab.getRowCount();
                 
                 queTab.clearSelection();
                 queTab.repaint();
                 queTab.revalidate();
                 queTab.updateUI();
+                
+                // Log when tickets are removed externally (e.g., by web payments)
+                if (newRowCount < oldRowCount) {
+                    System.out.println("Queue: Hard refresh detected ticket removal (rows: " + oldRowCount + " -> " + newRowCount + ")");
+                }
                 
                 // Re-setup columns after data refresh
                 setupActionColumn();
@@ -458,17 +466,23 @@ private class CombinedProceedEditor extends AbstractCellEditor implements TableC
     }
     
     private void setupPeriodicRefresh() {
-        javax.swing.Timer refreshTimer = new javax.swing.Timer(3000, _ -> {
+        javax.swing.Timer refreshTimer = new javax.swing.Timer(2000, _ -> { // Reduced from 3000ms to 2000ms for faster response
             SwingUtilities.invokeLater(() -> {
                 try {
                     int currentRowCount = queTab.getRowCount();
                     cephra.Admin.Utilities.QueueBridge.reloadFromDatabase();
                     
                     int newRowCount = queTab.getRowCount();
-                    if (newRowCount > currentRowCount) {
+                    
+                    // Always repaint and revalidate when row count changes (additions OR removals)
+                    if (newRowCount != currentRowCount) {
                         queTab.repaint();
                         queTab.revalidate();
                         updateStatusCounters();
+                        
+                        if (newRowCount < currentRowCount) {
+                            System.out.println("Queue: Detected ticket removal - refreshed admin queue (rows: " + currentRowCount + " -> " + newRowCount + ")");
+                        }
                     }
                     
                     initializeWaitingGridFromDatabase();
