@@ -801,15 +801,12 @@ public class LinkedCar extends javax.swing.JPanel {
 
         setLayout(null);
 
-        StopCharge.setText("Stop");
-        StopCharge.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                StopChargeActionPerformed(evt);
-            }
-        });
+        StopCharge.setFont(new java.awt.Font("Segoe UI Black", 0, 36)); // NOI18N
+        StopCharge.setForeground(new java.awt.Color(204, 0, 51));
+        StopCharge.setText("Stop Charging");
+        StopCharge.setBorder(null);
         add(StopCharge);
-        StopCharge.setBounds(130, 310, 72, 23);
-        StopCharge.setVisible(false); // Hide by default
+        StopCharge.setBounds(30, 530, 310, 50);
 
         jLabel2.setBackground(new java.awt.Color(204, 204, 204));
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
