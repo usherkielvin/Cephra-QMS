@@ -806,7 +806,8 @@ public class LinkedCar extends javax.swing.JPanel {
         StopCharge.setText("Stop Charging");
         StopCharge.setBorder(null);
         add(StopCharge);
-        StopCharge.setBounds(30, 530, 310, 50);
+        StopCharge.setBounds(130, 310, 72, 23);
+        StopCharge.setVisible(false); // Hide by default
 
         jLabel2.setBackground(new java.awt.Color(204, 204, 204));
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -1016,9 +1017,9 @@ public class LinkedCar extends javax.swing.JPanel {
         });
     }//GEN-LAST:event_chargeActionPerformed
 
-    private void StopChargeActionPerformed(java.awt.event.ActionEvent evt) {
-        stopChargingManually();
-    }
+    private void StopChargeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StopChargeActionPerformed
+         stopChargingManually();
+    }//GEN-LAST:event_StopChargeActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton StopCharge;

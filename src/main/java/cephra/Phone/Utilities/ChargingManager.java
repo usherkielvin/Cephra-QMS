@@ -1,7 +1,6 @@
 package cephra.Phone.Utilities;
 import javax.swing.*;
 import java.awt.event.*;
-import java.awt.event.ActionListener;
 import java.util.concurrent.*;
 
 public class ChargingManager {
@@ -10,8 +9,6 @@ public class ChargingManager {
     
     private Timer globalMonitorTimer;
     private final ConcurrentHashMap<String, String> lastKnownUserStatus = new ConcurrentHashMap<>();
-    
-    // Blacklist users who manually stopped - NEVER auto-restart them
     private final java.util.Set<String> manualStopBlacklist = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
     
     @SuppressWarnings("unused")
@@ -471,34 +468,22 @@ public class ChargingManager {
             System.out.println("ChargingManager: No active charging session found for " + username + " - already stopped");
         }
     }
-    
-    /**
-     * Check if user is currently charging
-     */
+
     public boolean isCharging(String username) {
         return activeSessions.containsKey(username);
     }
     
-    /**
-     * Get charging type for user (if charging)
-     */
     public String getChargingType(String username) {
         ChargingSession session = activeSessions.get(username);
         return session != null ? session.chargingType : null;
     }
-    
-    /**
-     * Stop all charging sessions (cleanup)
-     */
+ 
     public void stopAllCharging() {
         for (String username : activeSessions.keySet()) {
             stopCharging(username);
         }
     }
-    
-    /**
-     * Stop global monitoring (cleanup)
-     */
+
     public void stopGlobalMonitoring() {
         if (globalMonitorTimer != null && globalMonitorTimer.isRunning()) {
             globalMonitorTimer.stop();
