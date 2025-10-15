@@ -10,6 +10,7 @@ public class Pending_Payment extends javax.swing.JPanel {
     private static Pending_Payment currentInstance = null;
     private static String currentTicketId = null;
     private static boolean isShowing = false;
+    private static javax.swing.JPanel currentOverlay = null;
     
     // Pending_Payment persistence state for top-up flow
     private static boolean isPendingTopUpReturn = false;
@@ -22,6 +23,28 @@ public class Pending_Payment extends javax.swing.JPanel {
     private static final int POPUP_HEIGHT = 280;
     private static final int PHONE_WIDTH = 350; // fallback if frame size not yet realized
     private static final int PHONE_HEIGHT = 750; // fallback if frame size not yet realized
+    
+    // Method to disable all components recursively
+    private static void disableAllComponents(Component component) {
+        component.setEnabled(false);
+        if (component instanceof Container) {
+            Container container = (Container) component;
+            for (Component child : container.getComponents()) {
+                disableAllComponents(child);
+            }
+        }
+    }
+    
+    // Method to enable all components recursively
+    private static void enableAllComponents(Component component) {
+        component.setEnabled(true);
+        if (component instanceof Container) {
+            Container container = (Container) component;
+            for (Component child : container.getComponents()) {
+                enableAllComponents(child);
+            }
+        }
+    }
     
     /**
      * Checks if Pending_Payment is currently showing for a specific ticket
@@ -168,15 +191,36 @@ public class Pending_Payment extends javax.swing.JPanel {
             if (containerW <= 0) containerW = PHONE_WIDTH;
             if (containerH <= 0) containerH = PHONE_HEIGHT;
             
+            // Disable the background panel so it's not touchable
+            Component contentPane = phoneFrame.getContentPane();
+            if (contentPane != null) {
+                contentPane.setEnabled(false);
+                // Disable all child components recursively
+                disableAllComponents(contentPane);
+            }
+            
+            // Create gray overlay background that blocks interaction
+            currentOverlay = new javax.swing.JPanel() {
+                @Override
+                protected void paintComponent(java.awt.Graphics g) {
+                    super.paintComponent(g);
+                    g.setColor(new java.awt.Color(0, 0, 0, 150)); // Semi-transparent black overlay
+                    g.fillRect(0, 0, getWidth(), getHeight());
+                }
+            };
+            currentOverlay.setBounds(0, 0, containerW, containerH);
+            currentOverlay.setOpaque(false);
+            
             // Center the Pending_Payment on the phone frame
             int x = (containerW - POPUP_WIDTH) / 2;
             int y = (containerH - POPUP_HEIGHT) / 2;
             
             currentInstance.setBounds(x, y, POPUP_WIDTH, POPUP_HEIGHT);
             
-            // Add to layered pane so it appears on top of current panel
+            // Add overlay and popup to layered pane
             JLayeredPane layeredPane = phoneFrame.getRootPane().getLayeredPane();
-            layeredPane.add(currentInstance, JLayeredPane.MODAL_LAYER);
+            layeredPane.add(currentOverlay, JLayeredPane.MODAL_LAYER - 1); // Background overlay
+            layeredPane.add(currentInstance, JLayeredPane.MODAL_LAYER); // Popup on top
             layeredPane.moveToFront(currentInstance);
             
             currentInstance.setVisible(true);
@@ -193,20 +237,35 @@ public class Pending_Payment extends javax.swing.JPanel {
         Pending_Payment instance = currentInstance;
 
         SwingUtilities.invokeLater(() -> {
+            // Remove popup
             if (instance.getParent() != null) {
                 instance.getParent().remove(instance);
             }
-            currentInstance = null;
-            currentTicketId = null;
-            isShowing = false;
-
-            // Repaint the phone frame
+            
+            // Remove overlay if it exists
+            if (currentOverlay != null && currentOverlay.getParent() != null) {
+                currentOverlay.getParent().remove(currentOverlay);
+                currentOverlay = null;
+            }
+            
+            // Re-enable the background panel
             for (Window window : Window.getWindows()) {
                 if (window instanceof cephra.Frame.Phone) {
-                    window.repaint();
+                    cephra.Frame.Phone phoneFrame = (cephra.Frame.Phone) window;
+                    Component contentPane = phoneFrame.getContentPane();
+                    if (contentPane != null) {
+                        contentPane.setEnabled(true);
+                        // Re-enable all child components recursively
+                        enableAllComponents(contentPane);
+                    }
+                    phoneFrame.repaint();
                     break;
                 }
             }
+            
+            currentInstance = null;
+            currentTicketId = null;
+            isShowing = false;
         });
     }
 }
