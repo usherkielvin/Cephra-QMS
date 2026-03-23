@@ -73,7 +73,7 @@ public class CephraDB {
         } catch (SQLException e) {
             System.err.println("Failed to initialize database: " + e.getMessage());
             System.err.println("Please ensure:");
-            System.err.println("1. XAMPP MySQL service is running");
+            System.err.println("1. MySQL service / Workbench is running");
             System.err.println("2. Database 'cephradb' exists");
             System.err.println("3. All tables are created using init.sql");
             e.printStackTrace();

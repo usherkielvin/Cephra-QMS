@@ -10,10 +10,10 @@ class Database {
     public function __construct() {
         // Main mobileweb folder - ALWAYS use localhost settings
         // This is for local development only
-        $this->host = 'localhost';
-        $this->db_name = 'cephradb';
+        $this->host = '127.0.0.1'; // as shown in your MySQL Workbench
+        $this->db_name = 'cephradb'; // change this if your schema name is different
         $this->username = 'root';
-        $this->password = '';
+        $this->password = 'ushpons08'; // enter your MySQL password if you set one
     }
     
     private function isLocalhost() {
@@ -29,14 +29,14 @@ class Database {
     
     public function getConnection() {
         try {
-            $dsn = "mysql:host={$this->host};dbname={$this->db_name};charset={$this->charset}";
+            $dsn = "mysql:host={$this->host};port=3306;dbname={$this->db_name};charset={$this->charset}";
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET time_zone = '+08:00'" // Set MySQL timezone to Asia/Manila
+                PDO::ATTR_EMULATE_PREPARES => false
             ];
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
+            $this->conn->exec("SET time_zone = '+08:00'"); // Set MySQL timezone to Asia/Manila
             
             // Log successful connection (only in development)
             if ($this->isLocalhost()) {

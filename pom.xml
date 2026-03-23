@@ -17,8 +17,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>24</maven.compiler.source>
-        <maven.compiler.target>24</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <exec.mainClass>cephra.Launcher</exec.mainClass>
     </properties>
 
@@ -38,12 +38,6 @@
             <version>5.0.1</version>
         </dependency>
         
-        <!-- H2 Database (alternative to MySQL) -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>2.2.224</version>
-        </dependency>
         
         <!-- JUnit 5 for testing -->
         <dependency>
@@ -64,7 +58,7 @@
 
     <build>
         <plugins>
-            <!-- Compiler plugin for Java 21 -->
+            <!-- Compiler plugin for Java 21 (ms-21.0.9) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -72,6 +66,9 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
@@ -82,6 +79,9 @@
                 <version>3.1.0</version>
                 <configuration>
                     <mainClass>cephra.Launcher</mainClass>
+                    <jvmArgs>
+                        <jvmArg>--enable-preview</jvmArg>
+                    </jvmArgs>
                 </configuration>
             </plugin>
             

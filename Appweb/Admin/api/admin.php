@@ -553,6 +553,7 @@ try {
             
             $service_type = $ticket_data['service_type'] ?? '';
             $is_fast_charging = (stripos($service_type, 'fast') !== false) || (stripos($ticket_id, 'FCH') !== false);
+            $bay_type = $is_fast_charging ? 'Fast' : 'Normal';
             
             error_log("Admin API: Ticket {$ticket_id} - Service: {$service_type}, Is Fast: " . ($is_fast_charging ? 'Yes' : 'No'));
             

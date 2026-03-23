@@ -1,8 +1,6 @@
 <?php
 // Footer partial for Cephra
 ?>
-<link rel="stylesheet" href="css/footer.css" />
-
 <footer class="footer">
     <div class="container">
         <div class="footer-content">

@@ -189,7 +189,6 @@ Cephra/
 - **Java Swing** - Desktop GUI framework
 - **Maven** - Build and dependency management
 - **MySQL 8.0+** - Primary database
-- **H2 Database** - Embedded database for development
 - **HikariCP** - High-performance connection pooling
 
 ### Frontend

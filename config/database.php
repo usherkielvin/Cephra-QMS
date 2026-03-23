@@ -9,11 +9,10 @@ class Database {
     
     public function __construct() {
         // Main config folder - ALWAYS use localhost settings
-        // This is for local development only
-        $this->host = 'localhost';
+        $this->host = '127.0.0.1';
         $this->db_name = 'cephradb';
         $this->username = 'root';
-        $this->password = '';
+        $this->password = 'ushpons08';
     }
     
     private function isLocalhost() {
