@@ -19,8 +19,23 @@ import java.time.Duration;
  */
 public final class HttpNotifier {
 
-    private static final String NOTIFY_URL =
-            "http://127.0.0.1/Cephra/Appweb/notify.php";
+    private static final String NOTIFY_URL;
+
+    static {
+        String url = "http://127.0.0.1/Cephra/Appweb/notify.php"; // fallback
+        try (java.io.InputStream in =
+                HttpNotifier.class.getResourceAsStream("/config.properties")) {
+            if (in != null) {
+                java.util.Properties props = new java.util.Properties();
+                props.load(in);
+                String val = props.getProperty("web.notify.url");
+                if (val != null && !val.isBlank()) url = val.trim();
+            }
+        } catch (Exception e) {
+            System.err.println("HttpNotifier: could not load config.properties, using default URL");
+        }
+        NOTIFY_URL = url;
+    }
 
     private static final HttpClient CLIENT = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(3))
@@ -28,9 +43,7 @@ public final class HttpNotifier {
 
     private HttpNotifier() {}
 
-    /**
-     * Notify the web layer of a ticket status change.
-     */
+    /** Notify the web layer of a ticket status change. */
     public static void ticketStatusChanged(String ticketId, String username,
                                            String oldStatus, String newStatus) {
         String payload = String.format(
@@ -43,9 +56,7 @@ public final class HttpNotifier {
         sendAsync(payload);
     }
 
-    /**
-     * Notify the web layer of a bay status change.
-     */
+    /** Notify the web layer of a bay status change. */
     public static void bayStatusChanged(String bayNumber, String oldStatus,
                                         String newStatus, String username) {
         String payload = String.format(
@@ -59,9 +70,7 @@ public final class HttpNotifier {
         sendAsync(payload);
     }
 
-    /**
-     * Notify the web layer that charging completed for a user.
-     */
+    /** Notify the web layer that charging completed for a user. */
     public static void chargingCompleted(String ticketId, String username) {
         String payload = String.format(
             "{\"event_type\":\"charging_completed\","
@@ -70,8 +79,6 @@ public final class HttpNotifier {
         );
         sendAsync(payload);
     }
-
-    // ----------------------------------------------------------------
 
     private static void sendAsync(String jsonBody) {
         try {
@@ -84,7 +91,6 @@ public final class HttpNotifier {
 
             CLIENT.sendAsync(request, HttpResponse.BodyHandlers.discarding())
                   .exceptionally(ex -> {
-                      // Web side unavailable — log quietly, never crash Java
                       System.err.println("HttpNotifier: " + ex.getMessage());
                       return null;
                   });
@@ -93,7 +99,6 @@ public final class HttpNotifier {
         }
     }
 
-    /** Minimal JSON string escaping for the values we embed. */
     private static String escape(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\")
@@ -102,3 +107,4 @@ public final class HttpNotifier {
                 .replace("\r", "\\r");
     }
 }
+

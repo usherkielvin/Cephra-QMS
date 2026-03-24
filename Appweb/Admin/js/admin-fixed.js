@@ -1759,22 +1759,62 @@ class AdminPanel {
     }
 
     startAutoRefresh() {
+        // SSE: connect to the event stream for instant push updates.
+        // Falls back to polling if SSE is unavailable.
+        if (typeof EventSource !== 'undefined') {
+            this._connectSSE();
+        } else {
+            this._startPolling();
+        }
+    }
+
+    _connectSSE() {
+        const lastId = sessionStorage.getItem('sse_last_id') || 0;
+        this._sse = new EventSource(`api/events.php?lastEventId=${lastId}`);
+
+        this._sse.addEventListener('queue_update', () => {
+            if (this.currentPanel === 'dashboard') this.loadDashboardData();
+            if (this.currentPanel === 'queue')     this.loadQueueData();
+        });
+        this._sse.addEventListener('bay_update', () => {
+            if (this.currentPanel === 'dashboard') this.loadDashboardData();
+            if (this.currentPanel === 'bays')      this.loadBaysData();
+        });
+        this._sse.addEventListener('charging_complete', () => {
+            this.loadDashboardData();
+            if (this.currentPanel === 'queue') this.loadQueueData();
+        });
+        this._sse.addEventListener('reconnect', () => {
+            this._sse.close();
+            setTimeout(() => this._connectSSE(), 500);
+        });
+        this._sse.onmessage = (e) => {
+            // store last event id for reconnect continuity
+            if (e.lastEventId) sessionStorage.setItem('sse_last_id', e.lastEventId);
+        };
+        this._sse.onerror = () => {
+            // SSE dropped — fall back to polling until reconnect
+            if (!this.refreshInterval) this._startPolling();
+        };
+        this._sse.onopen = () => {
+            // SSE reconnected — stop polling fallback
+            if (this.refreshInterval) {
+                clearInterval(this.refreshInterval);
+                this.refreshInterval = null;
+            }
+        };
+    }
+
+    _startPolling() {
+        if (this.refreshInterval) return;
         this.refreshInterval = setInterval(() => {
             switch (this.currentPanel) {
-                case 'dashboard':
-                    this.loadDashboardData();
-                    break;
-                case 'queue':
-                    this.loadQueueData();
-                    break;
-                case 'bays':
-                    this.loadBaysData();
-                    break;
-                case 'users':
-                    this.loadUsersData();
-                    break;
+                case 'dashboard': this.loadDashboardData(); break;
+                case 'queue':     this.loadQueueData();     break;
+                case 'bays':      this.loadBaysData();      break;
+                case 'users':     this.loadUsersData();     break;
             }
-        }, 3000);
+        }, 10000); // 10s fallback — SSE handles the fast path
     }
 
     formatCurrency(amount) {

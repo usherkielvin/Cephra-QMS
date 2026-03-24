@@ -1,11 +1,13 @@
 package cephra.Phone.Utilities;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 
 public final class QueueFlow {
 
-    public static final class Entry {
+    public static final class Entry implements Comparable<Entry> {
         public final String ticketId;
         public final String customerName;
         public final String serviceName;
@@ -14,6 +16,8 @@ public final class QueueFlow {
         public final String action;
         public final int initialBatteryPercent;
         public final double batteryCapacityKWh;
+        // Insertion order — used as tiebreaker so FIFO is preserved within same priority
+        final long insertionOrder;
 
         public Entry(String ticketId, String customerName, String serviceName, String status, String payment, String action, int initialBatteryPercent, double batteryCapacityKWh) {
             this.ticketId = ticketId;
@@ -24,10 +28,25 @@ public final class QueueFlow {
             this.action = action;
             this.initialBatteryPercent = initialBatteryPercent;
             this.batteryCapacityKWh = batteryCapacityKWh;
+            this.insertionOrder = System.nanoTime();
+        }
+
+        /** Priority: battery < 20% (FCHP/NCHP) sorts before normal tickets. */
+        private int priorityRank() {
+            return (initialBatteryPercent < 20) ? 0 : 1;
+        }
+
+        @Override
+        public int compareTo(Entry other) {
+            int cmp = Integer.compare(this.priorityRank(), other.priorityRank());
+            if (cmp != 0) return cmp;
+            return Long.compare(this.insertionOrder, other.insertionOrder); // FIFO tiebreak
         }
     }
 
-    private static final List<Entry> entries = new ArrayList<Entry>();
+    // PriorityQueue: low-battery tickets (< 20%) sort ahead of normal tickets.
+    // Within the same priority, insertion order (FIFO) is preserved.
+    private static final PriorityQueue<Entry> queue = new PriorityQueue<>();
 
     private static String currentTicketId = "";
     private static String currentServiceName = "";
@@ -151,7 +170,10 @@ public final class QueueFlow {
     }
 
     public static List<Entry> getEntries() {
-        return entries;
+        // Return a sorted snapshot — callers get priority order without touching the queue directly
+        List<Entry> sorted = new ArrayList<>(queue);
+        sorted.sort(Comparator.naturalOrder());
+        return sorted;
     }
 
     // Returns the next ticket id that would be used for the given service, without mutating counters
@@ -198,22 +220,19 @@ public final class QueueFlow {
     }
     
     public static void updatePaymentStatus(String ticketId, String paymentStatus) {
-        for (int i = 0; i < entries.size(); i++) {
-            Entry entry = entries.get(i);
+        // Rebuild the queue replacing the matching entry with updated payment status
+        List<Entry> snapshot = new ArrayList<>(queue);
+        queue.clear();
+        for (Entry entry : snapshot) {
             if (entry.ticketId.equals(ticketId)) {
-                // Replace the entry with updated payment status
-                entries.set(i, new Entry(
-                    entry.ticketId,
-                    entry.customerName,
-                    entry.serviceName,
-                    entry.status,
-                    paymentStatus,
-                    entry.action,
-                    entry.initialBatteryPercent,
-                    entry.batteryCapacityKWh
+                queue.add(new Entry(
+                    entry.ticketId, entry.customerName, entry.serviceName,
+                    entry.status, paymentStatus, entry.action,
+                    entry.initialBatteryPercent, entry.batteryCapacityKWh
                 ));
                 System.out.println("QueueFlow: Updated payment status for ticket " + ticketId + " to " + paymentStatus);
-                break;
+            } else {
+                queue.add(entry);
             }
         }
     }
@@ -283,7 +302,7 @@ public final class QueueFlow {
             return null;
         }
         
-        for (Entry entry : entries) {
+        for (Entry entry : queue) {
             if (entry.ticketId.equals(currentTicketId)) {
                 return entry;
             }
@@ -314,8 +333,8 @@ public final class QueueFlow {
         final String action = "";
         final double batteryCapacityKWh = 40.0; // 40kWh capacity
 
-        // Store in memory list
-        entries.add(new Entry(ticket, customerName, service, status, payment, action, initialBatteryPercent, batteryCapacityKWh));
+        // Store in priority queue — low-battery entries will sort ahead automatically
+        queue.add(new Entry(ticket, customerName, service, status, payment, action, initialBatteryPercent, batteryCapacityKWh));
 
         // Reflect into Admin table if registered
         try {

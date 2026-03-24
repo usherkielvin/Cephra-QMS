@@ -16,26 +16,14 @@ public class DatabaseConnection {
     private static final HikariDataSource DATA_SOURCE;
 
     static {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://127.0.0.1:3306/cephradb");
-        config.setUsername("root");
-        config.setPassword("ushpons08");
-
-        // Pool tuning — sensible defaults for a desktop/demo app
-        config.setMaximumPoolSize(10);
-        config.setMinimumIdle(2);
-        config.setConnectionTimeout(30_000);   // 30 s
-        config.setIdleTimeout(600_000);        // 10 min
-        config.setMaxLifetime(1_800_000);      // 30 min
-        config.setPoolName("CephraPool");
-
-        // Recommended MySQL properties
-        config.addDataSourceProperty("cachePrepStmts",          "true");
-        config.addDataSourceProperty("prepStmtCacheSize",       "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit",   "2048");
-        config.addDataSourceProperty("useServerPrepStmts",      "true");
-
-        DATA_SOURCE = new HikariDataSource(config);
+        try {
+            // Load credentials from db.properties — never hardcode them here.
+            HikariConfig config = new HikariConfig("/db.properties");
+            DATA_SOURCE = new HikariDataSource(config);
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(
+                "Failed to load db.properties: " + e.getMessage());
+        }
     }
 
     /** Returns a pooled connection. Caller must close it (try-with-resources recommended). */
@@ -53,7 +41,7 @@ public class DatabaseConnection {
         }
     }
 
-    /** Shuts down the pool gracefully (call on app exit if needed). */
+    /** Shuts down the pool gracefully. Called by the shutdown hook in Launcher. */
     public static void close() {
         if (DATA_SOURCE != null && !DATA_SOURCE.isClosed()) {
             DATA_SOURCE.close();

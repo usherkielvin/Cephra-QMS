@@ -3,7 +3,14 @@ import cephra.Database.CephraDB;
 public final class Launcher {
 
 	public static void main(String[] args) {
-		
+
+		// Shut down HikariCP pool cleanly on JVM exit
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			cephra.Phone.Utilities.ChargingManager.getInstance().stopAllCharging();
+			cephra.Database.DatabaseConnection.close();
+			System.out.println("Launcher: DB pool closed.");
+		}, "shutdown-hook"));
+
 		try {
 			CephraDB.initializeDatabase();
 			CephraDB.validateDatabaseIntegrity();
