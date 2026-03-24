@@ -102,34 +102,6 @@ $username = $_SESSION['username'];
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? '';
 
-// Debug logging
-error_log("Status update API called - Username: $username, Action: $action");
-
-if ($action === 'test_status') {
-    // Test endpoint to check current status for debugging
-    $test_username = $_POST['username'] ?? $username;
-    
-    $stmt_queue = $conn->prepare("SELECT * FROM queue_tickets WHERE username = :username AND status NOT IN ('complete') ORDER BY created_at DESC LIMIT 1");
-    $stmt_queue->bindParam(':username', $test_username);
-    $stmt_queue->execute();
-    $queue_ticket = $stmt_queue->fetch(PDO::FETCH_ASSOC);
-    
-    $stmt_active = $conn->prepare("SELECT ticket_id, status, bay_number, created_at FROM active_tickets WHERE username = :username ORDER BY created_at DESC LIMIT 1");
-    $stmt_active->bindParam(':username', $test_username);
-    $stmt_active->execute();
-    $active_ticket = $stmt_active->fetch(PDO::FETCH_ASSOC);
-    
-    echo json_encode([
-        'success' => true,
-        'test_username' => $test_username,
-        'session_username' => $username,
-        'queue_ticket' => $queue_ticket,
-        'active_ticket' => $active_ticket,
-        'charging_grid' => $conn->query("SELECT bay_number, ticket_id FROM charging_grid WHERE username = '$test_username'")->fetchAll(PDO::FETCH_ASSOC)
-    ]);
-    exit();
-}
-
 if ($action === 'get_status') {
     // Fetch latest charging status from both queue_tickets and active_tickets
     $stmt_queue = $conn->prepare("SELECT * FROM queue_tickets WHERE username = :username AND status NOT IN ('complete') ORDER BY created_at DESC LIMIT 1");
@@ -147,9 +119,6 @@ if ($action === 'get_status') {
     $background_class = 'connected-bg';
     $button_text = 'Charge Now';
     $button_href = 'ChargingPage.php';
-    
-    // Debug logging
-    error_log("Initial status for $username: $status_text");
 
     // Determine which ticket is more recent and prioritize it
     $use_queue_ticket = false;
@@ -161,14 +130,10 @@ if ($action === 'get_status') {
         $active_time = strtotime($active_ticket['created_at']);
         $use_queue_ticket = ($queue_time >= $active_time);
         $use_active_ticket = !$use_queue_ticket;
-        
-        error_log("Both tickets found for $username - Queue: {$queue_ticket['created_at']}, Active: {$active_ticket['created_at']}, Using: " . ($use_queue_ticket ? 'queue' : 'active'));
     } elseif ($queue_ticket) {
         $use_queue_ticket = true;
-        error_log("Only queue ticket found for $username");
     } elseif ($active_ticket) {
         $use_active_ticket = true;
-        error_log("Only active ticket found for $username");
     }
 
     // Check active_tickets for charging states
@@ -194,10 +159,7 @@ if ($action === 'get_status') {
             $status_text = 'Charging at ' . $bay_number;
             $button_text = 'Check Monitor';
             $button_href = '../Monitor/index.php';
-            
-            // Debug logging
-            error_log("Status updated to charging (from active_tickets) for $username: $status_text");
-            
+
             // Add ticket information for active_tickets charging status
             $ticket_info = [
                 'ticket_id' => $active_ticket['ticket_id'],
@@ -211,15 +173,12 @@ if ($action === 'get_status') {
         $payment_status = strtolower($queue_ticket['payment_status'] ?? '');
         $ticket_id = $queue_ticket['ticket_id'];
 
-        error_log("Processing queue ticket for $username - Original status: {$queue_ticket['status']}, Payment status: {$queue_ticket['payment_status']}, Lowercase status: $queue_status, Ticket ID: $ticket_id");
-
         // Check if payment is completed - if so, show as connected
         if (in_array($payment_status, ['paid', 'completed', 'success'])) {
             $status_text = 'Connected';
             $background_class = 'connected-bg';
             $button_text = 'Charge Now';
             $button_href = 'ChargingPage.php';
-            error_log("Status updated to connected (payment completed) for $username: $status_text");
         } elseif ($queue_status === 'charging') {
             $background_class = 'charging-bg';
 
@@ -239,25 +198,21 @@ if ($action === 'get_status') {
             $status_text = 'Charging at ' . $bay_number;
             $button_text = 'Check Monitor';
             $button_href = '../Monitor/index.php';
-            error_log("Status updated to charging (from queue_tickets) for $username: $status_text");
         } elseif ($queue_status === 'pending') {
             $background_class = 'connected-bg';
             $status_text = 'Connected';
             $button_text = 'Charge Now';
             $button_href = 'ChargingPage.php';
-            error_log("Status updated to connected (pending ticket ready) for $username: $status_text");
         } elseif ($queue_status === 'waiting') {
             $background_class = 'waiting-bg';
             $status_text = 'Waiting';
             $button_text = 'Check Monitor';
             $button_href = '../Monitor/index.php';
-            error_log("Status updated to waiting for $username: $status_text");
         } elseif ($queue_status === 'in progress' || $queue_status === 'in_progress') {
             $background_class = 'waiting-bg';
             $status_text = 'In Progress';
             $button_text = 'Check Monitor';
             $button_href = '../Monitor/index.php';
-            error_log("Status updated to in progress for $username: $status_text");
         } elseif ($queue_status === 'complete') {
             // Check if payment is already completed (ticket should be removed if paid)
             if (strtolower($queue_ticket['payment_status']) === 'paid' ||
@@ -268,7 +223,6 @@ if ($action === 'get_status') {
                 $status_text = 'Connected';
                 $button_text = 'Charge Now';
                 $button_href = 'ChargingPage.php';
-                error_log("Status updated to connected (payment completed) for $username: $status_text");
             } else {
                 // Still pending payment
                 $background_class = 'queue-pending-bg';
@@ -283,8 +237,6 @@ if ($action === 'get_status') {
                     'service_type' => $queue_ticket['service_type'],
                     'amount' => calculateChargingAmount($queue_ticket['service_type'])
                 ];
-                
-                error_log("Status updated to pending payment for $username: $status_text");
             }
         }
 
@@ -315,9 +267,6 @@ if ($action === 'get_status') {
         }
     }
 
-    // Final debug logging
-    error_log("Final status for $username: $status_text, Background: $background_class, Button: $button_text");
-    
     echo json_encode([
         'success' => true,
         'status_text' => $status_text,

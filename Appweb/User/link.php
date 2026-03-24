@@ -119,9 +119,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['link_car'])) {
         // Link car functionality
         if ($conn) {
-            // Generate random car_index between 0-8 to match vehicle specs
+            // NOTE: Vehicle linking is currently SIMULATED for demo/academic purposes.
+            // A random car model (car_index 0-8) and plate number are assigned.
+            // In a production system this should be replaced with a real EV API integration
+            // (e.g. Tesla API, OCPP identity, or a VIN/plate lookup service) so that the
+            // actual vehicle owned by the user is linked to their account.
             $newCarIndex = rand(0, 8);
-            // Generate random plate number: 3 letters + 4 numbers
             $plateNumber = generatePlateNumber();
             $stmt = $conn->prepare("UPDATE users SET car_index = :car_index, plate_number = :plate_number WHERE username = :username");
             $stmt->bindParam(':car_index', $newCarIndex);

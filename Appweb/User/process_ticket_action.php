@@ -1,7 +1,6 @@
 <?php
-// Enable error display for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
@@ -29,12 +28,7 @@ $username = $_SESSION['username'];
 // Get ticketId from POST request
 $requestedTicketId = $_POST['ticketId'] ?? '';
 
-// Debug logging
-error_log("Process ticket action called - Username: $username, RequestedTicketId: $requestedTicketId");
-
-// Check if we have a pending ticket in session
 if (!isset($_SESSION['pendingTicket'])) {
-    error_log("No pending ticket found in session");
     echo json_encode(['error' => 'No pending ticket found. Please try again.']);
     exit();
 }
@@ -51,33 +45,46 @@ $initialStatus = $pendingTicket['initialStatus'];
 
 // Validate that the requested ticket ID matches the pending ticket ID
 if ($requestedTicketId !== $ticketId) {
-    error_log("Ticket ID mismatch - Requested: $requestedTicketId, Pending: $ticketId");
     unset($_SESSION['pendingTicket']);
     echo json_encode(['error' => 'Ticket ID mismatch. Please try again.']);
     exit();
 }
 
-// Re-check if user still doesn't have an active ticket (double-check before creating)
-$stmt = $conn->prepare("SELECT COUNT(*) FROM active_tickets WHERE username = :username");
-$stmt->bindParam(':username', $username);
-$stmt->execute();
-$activeTicketCount = $stmt->fetchColumn();
+// Re-check under a lock to prevent race conditions before inserting
+try {
+    $conn->beginTransaction();
 
-if ($activeTicketCount > 0) {
-    unset($_SESSION['pendingTicket']); // Clear pending ticket
-    echo json_encode(['error' => 'You already have an active charging ticket. Please complete your current session first.']);
-    exit();
-}
+    $stmt = $conn->prepare("SELECT username FROM users WHERE username = :username FOR UPDATE");
+    $stmt->bindParam(':username', $username);
+    $stmt->execute();
 
-// Also block if user already has a ticket in queue (Waiting/Pending/Processing)
-$stmt = $conn->prepare("SELECT COUNT(*) FROM queue_tickets WHERE username = :username AND status IN ('Waiting','Pending','Processing')");
-$stmt->bindParam(':username', $username);
-$stmt->execute();
-$queuedCount = $stmt->fetchColumn();
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM active_tickets WHERE username = :username");
+    $stmt->bindParam(':username', $username);
+    $stmt->execute();
+    if ((int)$stmt->fetchColumn() > 0) {
+        $conn->rollBack();
+        unset($_SESSION['pendingTicket']);
+        echo json_encode(['error' => 'You already have an active charging ticket. Please complete your current session first.']);
+        exit();
+    }
 
-if ($queuedCount > 0) {
-    unset($_SESSION['pendingTicket']); // Clear pending ticket
-    echo json_encode(['error' => 'You already have a ticket in queue. Please wait until it is processed.']);
+    $stmt = $conn->prepare(
+        "SELECT COUNT(*) FROM queue_tickets
+         WHERE username = :username AND status IN ('Waiting','Pending','Processing','In Progress')"
+    );
+    $stmt->bindParam(':username', $username);
+    $stmt->execute();
+    if ((int)$stmt->fetchColumn() > 0) {
+        $conn->rollBack();
+        unset($_SESSION['pendingTicket']);
+        echo json_encode(['error' => 'You already have a ticket in queue. Please wait until it is processed.']);
+        exit();
+    }
+} catch (Exception $e) {
+    $conn->rollBack();
+    unset($_SESSION['pendingTicket']);
+    http_response_code(500);
+    echo json_encode(['error' => 'Server error during validation.']);
     exit();
 }
 
@@ -94,9 +101,7 @@ if ($currentBatteryLevel >= 100) {
     exit();
 }
 
-// Now actually create the ticket in queue_tickets
-error_log("Creating ticket in queue_tickets - ID: $ticketId, User: $username, Service: $queueServiceType, Status: $initialStatus, Battery: $batteryLevel, Priority: $priority");
-
+// Create the ticket in queue_tickets (inside the open transaction)
 $stmt = $conn->prepare("INSERT INTO queue_tickets (ticket_id, username, service_type, status, payment_status, initial_battery_level, priority) VALUES (:ticket_id, :username, :service_type, :status, '', :battery_level, :priority)");
 $stmt->bindParam(':ticket_id', $ticketId);
 $stmt->bindParam(':username', $username);
@@ -107,8 +112,9 @@ $stmt->bindParam(':priority', $priority);
 
 if (!$stmt->execute()) {
     $errorInfo = $stmt->errorInfo();
-    error_log("Failed to insert ticket into queue_tickets - Error: " . $errorInfo[2]);
-    unset($_SESSION['pendingTicket']); // Clear pending ticket
+    error_log("Failed to insert ticket: " . $errorInfo[2]);
+    $conn->rollBack();
+    unset($_SESSION['pendingTicket']);
     http_response_code(500);
     echo json_encode(['error' => 'Failed to create ticket', 'db_error' => $errorInfo[2]]);
     exit();
@@ -119,13 +125,11 @@ error_log("Successfully created ticket $ticketId in queue_tickets");
 // If this is a priority ticket (Waiting status), add to waiting grid
 if ($priority == 1) {
     try {
-        // Add ticket to waiting grid
         $stmt = $conn->prepare("SELECT slot_number FROM waiting_grid WHERE ticket_id IS NULL ORDER BY slot_number LIMIT 1");
         $stmt->execute();
         $availableSlot = $stmt->fetchColumn();
         
         if ($availableSlot) {
-            // Add ticket to waiting grid
             $stmt = $conn->prepare("UPDATE waiting_grid SET ticket_id = :ticket_id, username = :username, service_type = :service_type, initial_battery_level = :battery_level, position_in_queue = :slot WHERE slot_number = :slot");
             $stmt->bindParam(':ticket_id', $ticketId);
             $stmt->bindParam(':username', $username);
@@ -133,19 +137,20 @@ if ($priority == 1) {
             $stmt->bindParam(':battery_level', $batteryLevel);
             $stmt->bindParam(':slot', $availableSlot);
             $stmt->execute();
-            
-            error_log("Priority ticket $ticketId added to waiting grid slot $availableSlot");
-        } else {
-            error_log("No available waiting slots for priority ticket $ticketId");
         }
     } catch (Exception $e) {
-        error_log("Failed to add priority ticket $ticketId to waiting grid: " . $e->getMessage());
+        error_log("Failed to add priority ticket to waiting grid: " . $e->getMessage());
     }
 }
+
+error_log("Successfully created ticket $ticketId");
 
 // Set current service in session
 $_SESSION['currentService'] = $serviceType;
 $_SESSION['currentTicketId'] = $ticketId;
+
+// Commit the transaction
+$conn->commit();
 
 // Clear the pending ticket from session since it's now created
 unset($_SESSION['pendingTicket']);

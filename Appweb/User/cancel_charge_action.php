@@ -1,7 +1,6 @@
 <?php
-// Enable error display for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
@@ -28,9 +27,6 @@ $username = $_SESSION['username'];
 
 $ticketId = $_POST['ticketId'] ?? '';
 $cancelPending = $_POST['cancelPending'] ?? false;
-
-// Debug logging
-error_log("Cancel charge action called - Username: $username, TicketId: $ticketId, CancelPending: $cancelPending");
 
 // Handle pending ticket cancellation (when user cancels the preview popup)
 if ($cancelPending) {

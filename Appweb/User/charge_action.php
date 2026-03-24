@@ -1,7 +1,6 @@
 <?php
-// Enable error display for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
@@ -45,27 +44,45 @@ if (!in_array($serviceType, ['Normal Charging', 'Fast Charging'])) {
     exit();
 }
 
-// Check if user has active ticket
-$stmt = $conn->prepare("SELECT COUNT(*) FROM active_tickets WHERE username = :username");
-$stmt->bindParam(':username', $username);
-$stmt->execute();
-$activeTicketCount = $stmt->fetchColumn();
+// --- Rate limiting: one active or queued ticket per user at a time ---
+// Use a transaction + SELECT FOR UPDATE to prevent race conditions from double-submits.
+$conn->beginTransaction();
 
-if ($activeTicketCount > 0) {
-    echo json_encode(['error' => 'You already have an active charging ticket. Please complete your current session first.']);
+try {
+    // Lock the user row to prevent concurrent submissions
+    $stmt = $conn->prepare("SELECT username FROM users WHERE username = :username FOR UPDATE");
+    $stmt->bindParam(':username', $username);
+    $stmt->execute();
+
+    // Check active_tickets
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM active_tickets WHERE username = :username");
+    $stmt->bindParam(':username', $username);
+    $stmt->execute();
+    if ((int)$stmt->fetchColumn() > 0) {
+        $conn->rollBack();
+        echo json_encode(['error' => 'You already have an active charging ticket. Please complete your current session first.']);
+        exit();
+    }
+
+    // Check queue_tickets for any non-terminal status
+    $stmt = $conn->prepare(
+        "SELECT COUNT(*) FROM queue_tickets
+         WHERE username = :username AND status IN ('Waiting','Pending','Processing','In Progress')"
+    );
+    $stmt->bindParam(':username', $username);
+    $stmt->execute();
+    if ((int)$stmt->fetchColumn() > 0) {
+        $conn->rollBack();
+        echo json_encode(['error' => 'You already have a ticket in queue. Please wait until it is processed.']);
+        exit();
+    }
+} catch (Exception $e) {
+    $conn->rollBack();
+    http_response_code(500);
+    echo json_encode(['error' => 'Server error during validation.']);
     exit();
 }
-
-// Also block if user already has a ticket in queue (Waiting/Pending/Processing)
-$stmt = $conn->prepare("SELECT COUNT(*) FROM queue_tickets WHERE username = :username AND status IN ('Waiting','Pending','Processing')");
-$stmt->bindParam(':username', $username);
-$stmt->execute();
-$queuedCount = $stmt->fetchColumn();
-
-if ($queuedCount > 0) {
-    echo json_encode(['error' => 'You already have a ticket in queue. Please wait until it is processed.']);
-    exit();
-}
+// Transaction stays open; we commit after inserting the ticket below.
 
 // Check if car is linked by verifying car_index in users table
 $stmt = $conn->prepare("SELECT car_index FROM users WHERE username = :username");
@@ -139,6 +156,9 @@ $_SESSION['pendingTicket'] = [
     'priority' => $priority,
     'initialStatus' => $initialStatus
 ];
+
+// Release the lock — no DB write yet (ticket created on confirm)
+$conn->rollBack();
 
 // Respond success with ticket details for preview popup
 echo json_encode([

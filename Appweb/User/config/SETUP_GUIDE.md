@@ -147,9 +147,8 @@ Appweb/User/
 ├── api/
 │   └── forgot_password.php          # Main API endpoint
 ├── config/
-│   ├── database.php                 # Database connection
+│   ├── database.php                 # Database connection (stub → shared/database.php)
 │   ├── email_config.php             # Email configuration
-│   ├── password_reset_tables.sql    # Database schema
 │   └── SETUP_GUIDE.md              # This guide
 ├── forgot_password.php              # Email input page
 ├── verify_code.php                  # Code verification page

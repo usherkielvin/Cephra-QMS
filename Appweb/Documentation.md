@@ -404,17 +404,10 @@ The `Appweb` folder contains the complete web application for the Cephra EV char
   - Redirect to login page
 
 ### queue_ticket_popup.php
-- **Type**: PHP (Modal Display)
-- **Purpose**: Displays queue ticket information
-- **Features**:
-  - Ticket details popup
-  - Queue position information
-  - Estimated wait time
+- **Status**: Removed — functionality is handled inline in ChargingPage.php
 
 ### FORGOT_PASSWORD_README.md
-- **Type**: Markdown documentation
-- **Purpose**: Password reset feature documentation
-- **Features**: Instructions for password recovery flow
+- **Status**: Removed — superseded by inline code documentation
 
 ### forgot_password.php, forgot_password_*.php (variants)
 - **Type**: PHP (Password Reset)

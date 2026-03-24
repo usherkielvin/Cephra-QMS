@@ -63,6 +63,10 @@ local.properties
 **/vendor/
 composer.lock
 
+# Environment / secrets
+Appweb/.env
+.env
+
 # OS specific
 .DS_Store
 .DS_Store?
