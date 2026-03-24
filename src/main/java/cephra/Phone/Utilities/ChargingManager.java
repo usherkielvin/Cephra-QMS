@@ -373,6 +373,8 @@ public class ChargingManager {
             if (currentTicketId != null && !session.completionNotificationSent) {
                 cephra.Phone.Utilities.NotificationManager.addFullChargeNotification(username, currentTicketId);
                 session.completionNotificationSent = true;
+                // Notify web layer so Monitor/User pages update immediately
+                cephra.Database.HttpNotifier.chargingCompleted(currentTicketId, username);
                 System.out.println("ChargingManager: Sent completion notification for " + username + " ticket " + currentTicketId);
             }
             

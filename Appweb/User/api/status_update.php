@@ -254,17 +254,38 @@ if ($action === 'get_status') {
     $battery_row = $stmt_battery->fetch(PDO::FETCH_ASSOC);
     $battery_level = $battery_row ? $battery_row['battery_level'] . '%' : '100%';
 
-    // Check for pending notifications (like Java MY_TURN notification)
+    // Check for pending notifications from the notifications table (DB event bus)
     $notification = null;
-    $notifications_file = 'notifications.json';
-    if (file_exists($notifications_file)) {
-        $notifications = json_decode(file_get_contents($notifications_file), true) ?: [];
-        if (isset($notifications[$username])) {
-            $notification = $notifications[$username];
-            // Remove notification after sending it (one-time notification)
-            unset($notifications[$username]);
-            file_put_contents($notifications_file, json_encode($notifications));
+    try {
+        $last_id = (int)($_SESSION['last_notification_id'] ?? 0);
+        $stmt_notif = $conn->prepare(
+            "SELECT id, event_type, payload FROM notifications
+             WHERE id > ? AND processed = 0
+             AND JSON_UNQUOTE(JSON_EXTRACT(payload, '$.username')) = ?
+             ORDER BY id ASC LIMIT 5"
+        );
+        $stmt_notif->execute([$last_id, $username]);
+        $notifs = $stmt_notif->fetchAll(PDO::FETCH_ASSOC);
+        if ($notifs) {
+            $last = end($notifs);
+            $_SESSION['last_notification_id'] = $last['id'];
+            // Surface the most relevant notification to the frontend
+            foreach ($notifs as $n) {
+                if ($n['event_type'] === 'ticket_status_changed') {
+                    $p = json_decode($n['payload'], true);
+                    if (($p['new_status'] ?? '') === 'Charging') {
+                        $notification = ['type' => 'MY_TURN', 'message' => 'Your turn to charge!'];
+                        break;
+                    }
+                }
+                if ($n['event_type'] === 'charging_completed') {
+                    $notification = ['type' => 'COMPLETE', 'message' => 'Charging complete!'];
+                    break;
+                }
+            }
         }
+    } catch (Exception $e) {
+        // notifications table may not exist yet — degrade gracefully
     }
 
     echo json_encode([

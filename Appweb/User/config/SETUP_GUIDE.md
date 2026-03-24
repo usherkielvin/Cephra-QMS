@@ -205,3 +205,22 @@ If you encounter any issues:
 4. Check PHP error logs
 
 The system is designed to be robust and secure. All database operations use prepared statements to prevent SQL injection.
+
+---
+
+## Notifications Event Bus Setup
+
+Run the SQL migration to enable real-time communication between Java and PHP.
+
+**In MySQL Workbench:**
+1. Connect to your local instance
+2. File → Open SQL Script → select `Appweb/shared/notifications_setup.sql`
+3. Hit the lightning bolt (⚡) to execute
+
+This creates:
+- `notifications` table — shared event bus between Java desktop app and PHP web app
+- `trg_ticket_status_changed` — fires when any ticket status changes
+- `trg_bay_status_changed` — fires when any bay status changes
+- `trg_ticket_inserted` — fires when a new ticket is created
+
+Once applied, the Monitor WebSocket will push updates only when something actually changes (instead of broadcasting every second), and the User status page will surface instant notifications when the Java admin assigns a bay or marks charging complete.

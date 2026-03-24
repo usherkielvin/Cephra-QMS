@@ -246,11 +246,9 @@ The application launches three synchronized interfaces:
 
 ## 📚 Documentation
 
-- **[Complete Setup Guide](docs/SETUP.md)** - Comprehensive installation instructions
-- **[MySQL Configuration](docs/MYSQL_SETUP.md)** - Database setup and optimization
-- **[XAMPP Setup](docs/XAMPP_SETUP.md)** - Web server configuration
-- **[Testing Guidelines](docs/TESTING.md)** - Testing procedures and best practices
-- **[Scripts Documentation](scripts/README.md)** - Batch scripts reference
+- **[Web App README](Appweb/README.md)** - Web interface overview and URLs
+- **[WebSocket Setup](Appweb/Monitor/WEBSOCKET_SETUP.md)** - Monitor WebSocket process manager guide
+- **[User Setup Guide](Appweb/User/config/SETUP_GUIDE.md)** - Email and environment config
 
 ## 🤝 Contributing
 

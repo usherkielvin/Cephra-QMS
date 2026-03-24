@@ -11,6 +11,7 @@ class MonitorWebSocketServer implements MessageComponentInterface {
     protected $lastData = null;
     protected $updateInterval = 1; // seconds
     protected $timer = null;
+    protected $lastNotificationId = 0; // tracks highest processed notification id
 
     public function __construct() {
         $this->clients = new \SplObjectStorage;
@@ -164,6 +165,13 @@ class MonitorWebSocketServer implements MessageComponentInterface {
     }
 
     protected function broadcastUpdates() {
+        // Check if any new notifications arrived since last broadcast
+        $hasNew = $this->hasNewNotifications();
+
+        if (!$hasNew) {
+            return; // Nothing changed — skip the full fetch
+        }
+
         // Fetch the latest data
         $data = $this->fetchMonitorData();
         
@@ -180,6 +188,30 @@ class MonitorWebSocketServer implements MessageComponentInterface {
             foreach ($this->clients as $client) {
                 $client->send(json_encode($data));
             }
+        }
+    }
+
+    /**
+     * Returns true if there are unprocessed notifications newer than
+     * the last one we saw, and advances lastNotificationId.
+     */
+    protected function hasNewNotifications(): bool {
+        try {
+            if (!$this->db) {
+                return true; // Can't check — assume yes
+            }
+            $stmt = $this->db->prepare(
+                "SELECT MAX(id) AS max_id FROM notifications WHERE id > ?"
+            );
+            $stmt->execute([$this->lastNotificationId]);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            if ($row && $row['max_id'] !== null) {
+                $this->lastNotificationId = (int) $row['max_id'];
+                return true;
+            }
+            return false;
+        } catch (\Exception $e) {
+            return true; // On error, broadcast anyway
         }
     }
 }

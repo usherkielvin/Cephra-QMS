@@ -1277,6 +1277,8 @@ public class CephraDB {
                 
                 int rowsAffected = stmt.executeUpdate();
                 if (rowsAffected > 0) {
+                    // Notify web layer of the status change (fire-and-forget)
+                    HttpNotifier.ticketStatusChanged(ticketId, "", "", status);
                     return true;
                 } else {
                     System.err.println("CephraDB: No rows affected when updating status for ticket " + ticketId);
