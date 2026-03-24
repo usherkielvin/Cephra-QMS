@@ -1,136 +1,249 @@
-# Cephra — EV Charging Queue Management System
+# Cephra QMS — EV Charging Queue Management System
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![PHP](https://img.shields.io/badge/PHP-8%2B-blue)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-Final project for Data Structures & Algorithms — NU MOA. A full-stack EV charging station queue management system with a Java desktop app and a PHP web app sharing one MySQL database.
+Cephra is a full-stack EV charging queue management system designed to optimize station operations, reduce wait times, and improve customer flow.
+
+Built as a Data Structures and Algorithms project, it integrates a **Java desktop system**, a **PHP web application**, and a **shared MySQL database** with real-time updates.
 
 ---
 
-## What it does
+## 🚀 TL;DR
 
-Manages EV charging queues across 8 bays. Customers join a queue, get assigned a bay, charge, and pay. Admins manage the queue, bays, and staff in real time.
-
-Three interfaces run simultaneously:
-- **Java Admin Panel** — desktop app for station operators (queue, bays, staff, payments, history)
-- **Java Phone Simulator** — 350×750px Swing window simulating a customer's mobile experience
-- **PHP Web App** — real browser-based interface for customers (`User/`) and admins (`Admin/`), plus a live display board (`Monitor/`) meant for a TV screen at the station
-
----
-
-## Tech stack
-
-| Layer | Tech |
-|---|---|
-| Desktop app | Java 21, Swing, Maven |
-| Desktop DB access | HikariCP 5.1, MySQL Connector/J 8.4 |
-| Web backend | PHP 8+, PDO |
-| Web frontend | HTML/CSS/JS, Bootstrap, Font Awesome |
-| Email | PHPMailer 6.10 |
-| Real-time web | Ratchet WebSocket (Monitor), Server-Sent Events (Admin) |
-| Database | MySQL 8.0+ via XAMPP |
+- Priority-based EV queue system (low battery first)
+- Real-time updates using WebSocket + SSE
+- Multi-interface system (Admin, Customer, Monitor)
+- Java + PHP connected directly to one MySQL database
+- Designed for scalability and real-world station workflows
 
 ---
 
-## Architecture
+## 📌 Why This Project Matters
 
-Both the Java app and PHP web app connect directly to the same `cephradb` MySQL database — no API layer between them. MySQL triggers write to a `notifications` table on any status change; the PHP WebSocket server and SSE endpoint read from it to push updates to browsers instantly.
+EV infrastructure is growing rapidly, but queue handling at charging stations remains inefficient.
 
-```
-Java Swing  ──── JDBC/HikariCP ────┐
-                                    ├──► MySQL (cephradb)
-PHP Web     ──── PDO ──────────────┘
-                 │
-                 ├── SSE (Admin dashboard — event-driven)
-                 └── WebSocket/Ratchet (Monitor display — 1s push)
-```
+Cephra solves this by:
+- Automating queue prioritization
+- Reducing idle bay time
+- Providing real-time visibility for both customers and operators
+- Simulating a real production environment using multiple systems
 
 ---
 
-## DSA implementation
+## 🧩 Features
 
-- `QueueFlow` — `PriorityQueue<Entry>` where tickets with battery < 20% sort ahead of normal tickets, FIFO preserved as tiebreaker within same priority
-- `BayManagement` — bay allocation algorithm assigns available bays by type (Fast/Normal)
-- `ChargingManager` — background `javax.swing.Timer` per user, increments battery 1%/tick, completes session at 100%
-- Ticket IDs: `FCH001` (Fast), `NCH001` (Normal), `FCHP001`/`NCHP001` (priority variants)
+- Real-time queue management across 8 charging bays  
+- Priority scheduling (battery < 20%)  
+- Automatic bay assignment (Fast / Normal)  
+- Live station monitor display (TV-ready)  
+- Customer queue tracking and charging progress  
+- Admin dashboard for operations and control  
+- Real-time updates via WebSocket and Server-Sent Events  
 
 ---
 
-## Project structure
+## 🖥️ System Components
 
-```
+### 1. Admin Panel (Java Swing)
+- Queue management  
+- Bay allocation  
+- Staff and transaction control  
+- Real-time monitoring  
+
+### 2. Phone Simulator (Java Swing)
+- Simulates customer mobile interface  
+- Queue status and charging progress  
+
+### 3. Web Application (PHP)
+- Customer interface (browser-based)  
+- Admin dashboard (SSE-powered)  
+- Monitor display (WebSocket-powered)  
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|------|-----------|
+| Desktop App | Java 21, Swing, Maven |
+| Web Backend | PHP 8+, PDO |
+| Database | MySQL 8 |
+| Connection Pool | HikariCP |
+| Real-time | WebSocket (Ratchet), Server-Sent Events |
+| Email | PHPMailer |
+| Frontend | HTML, CSS, JavaScript, Bootstrap |
+
+---
+
+## 🏗️ Architecture
+
+Both Java and PHP systems connect directly to a shared MySQL database.
+Java App ─── JDBC ───┐
+├── MySQL (cephradb)
+PHP Web ─── PDO ────┘
+│
+├── SSE (Admin updates)
+└── WebSocket (Monitor display)
+
+
+### Real-Time Flow
+- MySQL triggers log updates into a `notifications` table  
+- PHP services read and broadcast updates  
+- Clients receive instant updates without refresh  
+
+---
+
+## 🧠 Data Structures & Algorithms
+
+### QueueFlow
+- Uses `PriorityQueue<Entry>`
+- Vehicles with battery < 20% are prioritized
+- FIFO preserved within same priority
+
+### BayManagement
+- Assigns available charging bays dynamically
+- Supports Fast and Normal chargers
+
+### ChargingManager
+- Uses background `Timer`
+- Battery increases 1% per tick
+- Auto-completes at 100%
+
+### Ticket Format
+- `FCH001` — Fast charging  
+- `NCH001` — Normal charging  
+- `FCHP001` / `NCHP001` — Priority tickets  
+
+---
+
+## 📂 Project Structure
+
+
 Cephra-QMS/
 ├── src/main/java/cephra/
-│   ├── Admin/          # Admin Swing panels (Queue, BayManagement, History, etc.)
-│   ├── Database/       # DatabaseConnection (HikariCP), CephraDB (all queries), HttpNotifier
-│   ├── Frame/          # Top-level windows (Admin, Phone, Monitor)
-│   ├── Phone/          # Customer simulator (Dashboard, Wallet, Profile, Utilities)
-│   └── Launcher.java   # Entry point — opens Admin + Phone windows
+│ ├── Admin/
+│ ├── Database/
+│ ├── Frame/
+│ ├── Phone/
+│ └── Launcher.java
 ├── src/main/resources/
-│   ├── db.properties       # DB credentials (not committed)
-│   └── config.properties   # Web notify URL
 ├── Appweb/
-│   ├── shared/         # Shared database.php + notifications_setup.sql
-│   ├── Admin/          # Web admin dashboard + SSE endpoint
-│   ├── Monitor/        # Live display board (WebSocket/Ratchet)
-│   ├── User/           # Customer web app (PWA-ready)
-│   └── notify.php      # Internal endpoint — Java posts events here
+│ ├── Admin/
+│ ├── User/
+│ ├── Monitor/
+│ └── shared/
 └── pom.xml
-```
+
 
 ---
 
-## Setup
+## ⚙️ Setup
 
-**Prerequisites:** Java 21+, Maven, XAMPP (Apache + MySQL)
+### Requirements
+- Java 21+
+- Maven
+- MySQL 8+
+- PHP (local server like Apache/Nginx)
 
-**1. Database**
+---
 
-Open `Appweb/shared/notifications_setup.sql` in MySQL Workbench and execute (⚡). This creates the `notifications` table and triggers on top of the existing `cephradb` schema.
+### 1. Database Setup
 
-**2. Web credentials**
+Run:
 
-Copy `Appweb/.env.example` to `Appweb/.env` and set your MySQL password:
-```
+
+Appweb/shared/notifications_setup.sql
+
+
+---
+
+### 2. Configure Web App
+
+Create `.env` file:
+
+
 DB_HOST=127.0.0.1
 DB_NAME=cephradb
 DB_USER=root
 DB_PASSWORD=yourpassword
-```
 
-**3. Java credentials**
 
-Edit `src/main/resources/db.properties` — set `dataSource.password`.
+---
 
-**4. Place web files**
+### 3. Configure Java App
 
-Copy `Appweb/` into `htdocs/Cephra/Appweb/` and start Apache + MySQL in XAMPP.
+Edit:
 
-**5. Run Java app**
-```bash
+
+src/main/resources/db.properties
+
+
+Set your database password:
+
+
+dataSource.password=yourpassword
+
+
+---
+
+### 4. Run Web App
+
+Serve the `Appweb/` folder using your PHP server.
+
+---
+
+### 5. Run Java App
+
+
 mvn exec:java
-```
 
-**Web URLs**
-- Customer: `http://localhost/Cephra/Appweb/User/`
-- Admin: `http://localhost/Cephra/Appweb/Admin/`
-- Monitor: `http://localhost/Cephra/Appweb/Monitor/`
 
 ---
 
-## Team
+## 🌐 Access
 
-| Name | Role |
-|---|---|
-| Usher Kielvin Ponce | Project lead, backend |
-| Mark Dwayne P. Dela Cruz | Web UI/UX |
-| Dizon S. Dizon | Backend, database |
-| Kenji A. Hizon | Java Swing frontend |
+- Customer: `http://localhost/Cephra/Appweb/User/`  
+- Admin: `http://localhost/Cephra/Appweb/Admin/`  
+- Monitor: `http://localhost/Cephra/Appweb/Monitor/`  
 
 ---
 
-## License
+## 📸 Demo / Screenshots
 
-MIT — see [LICENSE](LICENSE)
+> (Add your screenshots here for portfolio)
+
+Example:
+
+
+
+
+
+
+
+---
+
+## 📊 Future Improvements
+
+- Mobile app (React Native / Flutter)
+- API layer (Spring Boot REST)
+- Cloud deployment (AWS / GCP)
+- Payment gateway integration
+- Predictive queue optimization (AI-based)
+
+---
+
+## 👥 Team
+
+- **Usher Kielvin Ponce** — Project Lead, Backend  
+- **Mark Dwayne P. Dela Cruz** — Web UI/UX  
+- **Dizon S. Dizon** — Backend, Database  
+- **Kenji A. Hizon** — Java Frontend  
+
+---
+
+## 📄 License
+
+MIT License
