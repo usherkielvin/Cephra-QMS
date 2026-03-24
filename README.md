@@ -270,9 +270,9 @@ mvn exec:java
 
 | <img src="https://img.icons8.com/color/48/administrator-male.png" width="32"/> | **Usher Kielvin Ponce** | Project Lead, Backend |
 |---|----------------------|----------------------|
-| <img src="https://img.icons8.com/color/48/web-design.png" width="32"/> | **Mark Dwayne P. Dela Cruz** | Web UI/UX |
-| <img src="https://img.icons8.com/color/48/database.png" width="32"/> | **Dizon S. Dizon** | Backend, Database |
-| <img src="https://img.icons8.com/color/48/java-coffee-cup-logo.png" width="32"/> | **Kenji A. Hizon** | Java Frontend |
+| <img src="https://img.icons8.com/color/48/web-design.png" width="32"/> | **Mark Dwayne Dela Cruz** | Web UI/UX |
+| <img src="https://img.icons8.com/color/48/database.png" width="32"/> | **Dizon Dizon** | Backend, Database |
+| <img src="https://img.icons8.com/color/48/java-coffee-cup-logo.png" width="32"/> | **Kenji Hizon** | Java Frontend |
 
 ---
 
