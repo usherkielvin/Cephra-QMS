@@ -431,7 +431,7 @@ public class WalletHistory extends javax.swing.JPanel implements WalletHistoryUp
             detailsClone.setFocusPainted(false);
         }
         
-        detailsClone.addActionListener(_ -> {
+        detailsClone.addActionListener(e -> {
             currentTransactionEntry = transaction;
             showWalletTransactionDetails(transaction);
         });
@@ -541,7 +541,7 @@ public class WalletHistory extends javax.swing.JPanel implements WalletHistoryUp
                     ok.removeActionListener(listener);
                 }
                 // Add action listener to close the details
-                ok.addActionListener(_ -> closeDetailsPanel());
+                ok.addActionListener(e -> closeDetailsPanel());
                 ok.setText("");
             }
             

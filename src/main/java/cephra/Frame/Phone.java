@@ -116,7 +116,7 @@ public class Phone extends javax.swing.JFrame {
     }
     
     private void startTimeTimer() {
-        javax.swing.Timer timer = new javax.swing.Timer(1000, _ -> updateTime());
+        javax.swing.Timer timer = new javax.swing.Timer(1000, e -> updateTime());
         timer.setRepeats(true);
         timer.start();
     }

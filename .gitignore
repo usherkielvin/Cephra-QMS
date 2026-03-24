@@ -59,6 +59,10 @@ local.properties
 .loadpath
 .recommenders
 
+# PHP / Composer
+**/vendor/
+composer.lock
+
 # OS specific
 .DS_Store
 .DS_Store?

@@ -349,8 +349,7 @@ public class CephraDB {
     
     // Method to generate and store a new 6-digit OTP
     public static String generateAndStoreOTP() {
-        Random random = new Random();
-        String generatedOTP = String.format("%06d", random.nextInt(1000000));
+        String generatedOTP = String.format("%06d", java.util.concurrent.ThreadLocalRandom.current().nextInt(1_000_000));
         
         // Determine which email to use for OTP storage
         String emailToUse = null;
@@ -681,7 +680,7 @@ public class CephraDB {
                 addPlateNumberColumn(conn);
             }
             
-            Random random = new Random();
+            var rng = java.util.concurrent.ThreadLocalRandom.current();
             String plateNumber;
             boolean isUnique = false;
             int attempts = 0;
@@ -694,14 +693,13 @@ public class CephraDB {
                 
                 // Generate 3 random letters (A-Z)
                 for (int i = 0; i < 3; i++) {
-                    char randomLetter = (char) ('A' + random.nextInt(26));
+                    char randomLetter = (char) ('A' + rng.nextInt(26));
                     sb.append(randomLetter);
                 }
                 
                 // Generate 4 random digits (0-9)
                 for (int i = 0; i < 4; i++) {
-                    int randomDigit = random.nextInt(10);
-                    sb.append(randomDigit);
+                    sb.append(rng.nextInt(10));
                 }
                 
                 plateNumber = sb.toString();
@@ -730,12 +728,13 @@ public class CephraDB {
             System.err.println("Error generating unique plate number: " + e.getMessage());
             e.printStackTrace();
             // Return a fallback plate number with random letters and timestamp
-            Random random = new Random();
-            String fallbackLetters = "";
+            var rng2 = java.util.concurrent.ThreadLocalRandom.current();
+            StringBuilder fbSb = new StringBuilder(7);
             for (int i = 0; i < 3; i++) {
-                fallbackLetters += (char) ('A' + random.nextInt(26));
+                fbSb.append((char) ('A' + rng2.nextInt(26)));
             }
-            String fallback = fallbackLetters + String.valueOf(System.currentTimeMillis() % 10000);
+            fbSb.append(System.currentTimeMillis() % 10_000);
+            String fallback = fbSb.toString();
             System.out.println("CephraDB: Using fallback plate number: " + fallback);
             return fallback;
         }

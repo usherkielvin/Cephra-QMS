@@ -57,7 +57,7 @@ public class Ad_Rewards extends javax.swing.JPanel {
 
     private void setupCloseAction() {
         if (jButton1 != null) {
-            jButton1.addActionListener(_ -> hidePopup());
+            jButton1.addActionListener(e -> hidePopup());
         }
     }
 

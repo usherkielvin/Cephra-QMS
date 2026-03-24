@@ -205,7 +205,7 @@ public class Link_First extends javax.swing.JPanel {
         jLabel1.setIcon(freshGifIcon);
         
         // Set up timer to forcibly cut GIF and switch to main image after 200ms (0.2 seconds)
-        introTimer = new Timer(200, _ -> {
+        introTimer = new Timer(200, e -> {
             // Force stop GIF by clearing icon first, then setting main image
             jLabel1.setIcon(null);
             SwingUtilities.invokeLater(() -> {

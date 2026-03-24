@@ -469,7 +469,7 @@ public final class QueueBridge {
                     
                     // COPY THE SAME APPROACH AS MANUAL "MARK AS PAID":
                     // Add a longer delay to ensure database operations complete before UI updates
-                    javax.swing.Timer refreshTimer = new javax.swing.Timer(200, _ -> {
+                    javax.swing.Timer refreshTimer = new javax.swing.Timer(200, event -> {
                         try {
                             // Remove ticket from queue (same as manual payment)
                             removeTicket(ticket);
@@ -602,7 +602,7 @@ public final class QueueBridge {
                     }
                     
                     // Add a longer delay to ensure database operations complete before UI updates
-                    javax.swing.Timer refreshTimer = new javax.swing.Timer(200, _ -> {
+                    javax.swing.Timer refreshTimer = new javax.swing.Timer(200, event -> {
                         try {
                             // Remove ticket from queue
                             removeTicket(ticket);

@@ -351,7 +351,7 @@ public class Queue_Ticket extends javax.swing.JPanel {
     // Action listeners for buttons
     private void setupActionListeners() {
         // OK button - create ticket
-        okBTN.addActionListener(_ -> {
+        okBTN.addActionListener(e -> {
             try {
                 String username = cephra.Database.CephraDB.getCurrentUsername();
                 String existingTicket = cephra.Phone.Utilities.QueueFlow.getCurrentTicketId();

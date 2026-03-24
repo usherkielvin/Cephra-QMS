@@ -2479,7 +2479,7 @@ if ($conn) {
             });
         }
                 // Pass PHP variables to JavaScript
-                window.chargingStatus = '<?php echo $charging_status; ?>';
+                window.chargingStatus = '<?php echo $background_class; ?>';
                 window.statusText = '<?php echo $status_text; ?>';
                 window.currentStatus = '<?php echo $current_ticket ? strtolower($current_ticket['status']) : ''; ?>';
                 window.paymentStatus = '<?php echo $latest_charging ? $latest_charging['payment_status'] : ''; ?>';

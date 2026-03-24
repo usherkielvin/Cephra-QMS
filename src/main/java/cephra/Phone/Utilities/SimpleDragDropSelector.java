@@ -106,8 +106,8 @@ public class SimpleDragDropSelector extends JDialog {
         add(mainPanel);
         
         // Add listeners
-        browseButton.addActionListener(_ -> openFileChooser());
-        cancelButton.addActionListener(_ -> {
+        browseButton.addActionListener(e -> openFileChooser());
+        cancelButton.addActionListener(e -> {
             selectedFile = null;
             dispose();
         });

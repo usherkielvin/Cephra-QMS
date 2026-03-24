@@ -361,7 +361,7 @@ private class CombinedProceedEditor extends AbstractCellEditor implements TableC
     
     private void checkAndRemovePaidRows() {
         SwingUtilities.invokeLater(() -> {
-            javax.swing.Timer timer = new javax.swing.Timer(500, _ -> {
+            javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
                 int paymentCol = getColumnIndex("Payment");
                 int ticketCol = getColumnIndex("Ticket");
                 
@@ -461,12 +461,12 @@ private class CombinedProceedEditor extends AbstractCellEditor implements TableC
 
     
     private void setupNextButtons() {
-        nxtnormalbtn.addActionListener(_ -> nextNormalTicket());
-        nxtfastbtn.addActionListener(_ -> nextFastTicket());
+        nxtnormalbtn.addActionListener(e -> nextNormalTicket());
+        nxtfastbtn.addActionListener(e -> nextFastTicket());
     }
     
     private void setupPeriodicRefresh() {
-        javax.swing.Timer refreshTimer = new javax.swing.Timer(2000, _ -> { // Reduced from 3000ms to 2000ms for faster response
+        javax.swing.Timer refreshTimer = new javax.swing.Timer(2000, e -> { // Reduced from 3000ms to 2000ms for faster response
             SwingUtilities.invokeLater(() -> {
                 try {
                     int currentRowCount = queTab.getRowCount();
@@ -931,7 +931,7 @@ private class CombinedProceedEditor extends AbstractCellEditor implements TableC
     
     private void setupDateTimeTimer() {
         updateDateTime();
-        javax.swing.Timer timer = new javax.swing.Timer(1000, _ -> updateDateTime());
+        javax.swing.Timer timer = new javax.swing.Timer(1000, e -> updateDateTime());
         timer.start();
     }
     

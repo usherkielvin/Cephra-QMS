@@ -100,8 +100,8 @@ public class DragDropImageSelector extends JDialog {
         add(mainPanel);
         
         // Add button listeners
-        browseButton.addActionListener(_ -> openFileChooser());
-        cancelButton.addActionListener(_ -> {
+        browseButton.addActionListener(e -> openFileChooser());
+        cancelButton.addActionListener(e -> {
             fileSelected = false;
             dispose();
         });

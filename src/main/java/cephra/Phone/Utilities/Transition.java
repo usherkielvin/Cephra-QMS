@@ -18,7 +18,7 @@ public class Transition extends javax.swing.JPanel {
         makeDraggable();
         // Align label like Porsche screens
         setupLabelPosition();
-         new Timer(3200, _ -> {
+         new Timer(3200, e -> {
                 java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor(Transition.this);
         if (w instanceof cephra.Frame.Phone) {
             ((cephra.Frame.Phone) w).switchPanel(new cephra.Phone.UserProfile.User_Login());

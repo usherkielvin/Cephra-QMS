@@ -12,7 +12,7 @@ public class Intro_Animation extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(370, 750));
         setSize(370, 750);
         
-           new Timer(8000, _ -> {
+           new Timer(8000, e -> {
                 java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor(Intro_Animation.this);
         if (w instanceof cephra.Frame.Phone) {
             ((cephra.Frame.Phone) w).switchPanel(new cephra.Phone.UserProfile.Loading_Screen());

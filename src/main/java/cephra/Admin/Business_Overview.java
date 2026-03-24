@@ -40,11 +40,11 @@ public class Business_Overview extends javax.swing.JPanel {
         RPHSpinner.setModel(new javax.swing.SpinnerNumberModel(RPH, 0, Integer.MAX_VALUE, 1));
         
         // Add change listeners to automatically save spinner values
-        MinfeeSpinner.addChangeListener(_ -> {
+        MinfeeSpinner.addChangeListener(e -> {
             Min = (Integer) MinfeeSpinner.getValue();
         });
         
-        RPHSpinner.addChangeListener(_ -> {
+        RPHSpinner.addChangeListener(e -> {
             RPH = (Integer) RPHSpinner.getValue();
         });
         

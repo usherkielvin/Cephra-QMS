@@ -374,7 +374,7 @@ public class ChargeHistory extends javax.swing.JPanel implements cephra.Phone.Ut
             detailsClone.setFocusPainted(false);
         }
         
-        detailsClone.addActionListener(_ -> {
+        detailsClone.addActionListener(e -> {
             currentHistoryEntry = entry;
             showHistoryDetails(entry);
         });
@@ -530,7 +530,7 @@ public class ChargeHistory extends javax.swing.JPanel implements cephra.Phone.Ut
                     ok.removeActionListener(listener);
                 }
                 // Add action listener to close the details
-                ok.addActionListener(_ -> closeDetailsPanel());
+                ok.addActionListener(e -> closeDetailsPanel());
                 ok.setText("");
             }
             
