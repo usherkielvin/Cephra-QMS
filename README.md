@@ -1,152 +1,198 @@
-# Cephra QMS — EV Charging Queue Management System
 
-![Java](https://img.shields.io/badge/Java-21-orange)
-![PHP](https://img.shields.io/badge/PHP-8%2B-blue)
-![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-blue)
-![License](https://img.shields.io/badge/License-MIT-yellow)
+<p align="center">
+	<img src="https://img.icons8.com/color/96/ev-plug.png" width="96" alt="Cephra Logo"/>
+</p>
 
-Cephra is a full-stack EV charging queue management system designed to optimize station operations, reduce wait times, and improve customer flow.
+# <span style="color:#2ecc40;">Cephra QMS</span> — <span style="color:#2980b9;">EV Charging Queue Management System</span>
 
-Built as a Data Structures and Algorithms project, it integrates a **Java desktop system**, a **PHP web application**, and a **shared MySQL database** with real-time updates.
+<p align="center">
+	<img src="https://img.shields.io/badge/Java-21-orange"/>
+	<img src="https://img.shields.io/badge/PHP-8%2B-blue"/>
+	<img src="https://img.shields.io/badge/MySQL-8.0%2B-blue"/>
+	<img src="https://img.shields.io/badge/License-MIT-yellow"/>
+</p>
+
+<p align="center">
+	<b>Cephra</b> is a full-stack EV charging queue management system designed to optimize station operations, reduce wait times, and improve customer flow.
+</p>
+
+<p align="center">
+	<i>Built as a Data Structures and Algorithms project, it integrates a <b>Java desktop system</b>, a <b>PHP web application</b>, and a <b>shared MySQL database</b> with real-time updates.</i>
+</p>
 
 ---
 
 ## 🚀 TL;DR
 
-- Priority-based EV queue system (low battery first)
-- Real-time updates using WebSocket + SSE
-- Multi-interface system (Admin, Customer, Monitor)
-- Java + PHP connected directly to one MySQL database
-- Designed for scalability and real-world station workflows
+<ul>
+	<li>⚡ <b>Priority-based EV queue system</b> (low battery first)</li>
+	<li>🔄 <b>Real-time updates</b> using WebSocket + SSE</li>
+	<li>🖥️ <b>Multi-interface system</b> (Admin, Customer, Monitor)</li>
+	<li>🔗 <b>Java + PHP</b> connected directly to one MySQL database</li>
+	<li>📈 <b>Designed for scalability</b> and real-world station workflows</li>
+</ul>
 
 ---
 
 ## 📌 Why This Project Matters
 
-EV infrastructure is growing rapidly, but queue handling at charging stations remains inefficient.
+> EV infrastructure is growing rapidly, but queue handling at charging stations remains inefficient.
 
 Cephra solves this by:
-- Automating queue prioritization
-- Reducing idle bay time
-- Providing real-time visibility for both customers and operators
-- Simulating a real production environment using multiple systems
+- 🤖 Automating queue prioritization
+- ⏳ Reducing idle bay time
+- 👀 Providing real-time visibility for both customers and operators
+- 🏭 Simulating a real production environment using multiple systems
 
 ---
 
 ## 🧩 Features
 
-- Real-time queue management across 8 charging bays  
-- Priority scheduling (battery < 20%)  
-- Automatic bay assignment (Fast / Normal)  
-- Live station monitor display (TV-ready)  
-- Customer queue tracking and charging progress  
-- Admin dashboard for operations and control  
-- Real-time updates via WebSocket and Server-Sent Events  
+- ⏱️ <b>Real-time queue management</b> across 8 charging bays
+- 🚦 <b>Priority scheduling</b> (battery < 20%)
+- ⚡ <b>Automatic bay assignment</b> (Fast / Normal)
+- 🖥️ <b>Live station monitor display</b> (TV-ready)
+- 📲 <b>Customer queue tracking</b> and charging progress
+- 🛠️ <b>Admin dashboard</b> for operations and control
+- 🔔 <b>Real-time updates</b> via WebSocket and Server-Sent Events
 
 ---
 
 ## 🖥️ System Components
 
-### 1. Admin Panel (Java Swing)
-- Queue management  
-- Bay allocation  
-- Staff and transaction control  
-- Real-time monitoring  
+<details>
+<summary><b>1. Admin Panel (Java Swing)</b></summary>
 
-### 2. Phone Simulator (Java Swing)
-- Simulates customer mobile interface  
-- Queue status and charging progress  
+- 🗂️ Queue management
+- 🪫 Bay allocation
+- 👨‍💼 Staff and transaction control
+- 📊 Real-time monitoring
+</details>
 
-### 3. Web Application (PHP)
-- Customer interface (browser-based)  
-- Admin dashboard (SSE-powered)  
-- Monitor display (WebSocket-powered)  
+<details>
+<summary><b>2. Phone Simulator (Java Swing)</b></summary>
+
+- 📱 Simulates customer mobile interface
+- ⏳ Queue status and charging progress
+</details>
+
+<details>
+<summary><b>3. Web Application (PHP)</b></summary>
+
+- 🌐 Customer interface (browser-based)
+- 🛡️ Admin dashboard (SSE-powered)
+- 🖥️ Monitor display (WebSocket-powered)
+</details>
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|------|-----------|
-| Desktop App | Java 21, Swing, Maven |
-| Web Backend | PHP 8+, PDO |
-| Database | MySQL 8 |
-| Connection Pool | HikariCP |
-| Real-time | WebSocket (Ratchet), Server-Sent Events |
-| Email | PHPMailer |
-| Frontend | HTML, CSS, JavaScript, Bootstrap |
+| Layer            | Technology                                      |
+|------------------|------------------------------------------------|
+| 🖥️ Desktop App   | <img src="https://img.shields.io/badge/Java-21-orange"/> Swing, Maven |
+| 🌐 Web Backend   | <img src="https://img.shields.io/badge/PHP-8%2B-blue"/> PDO |
+| 🗄️ Database      | <img src="https://img.shields.io/badge/MySQL-8.0%2B-blue"/> |
+| 🔗 Connection    | HikariCP                                        |
+| 🔄 Real-time     | WebSocket (Ratchet), Server-Sent Events         |
+| ✉️ Email        | PHPMailer                                       |
+| 🎨 Frontend      | HTML, CSS, JavaScript, Bootstrap                |
 
 ---
 
 ## 🏗️ Architecture
 
 Both Java and PHP systems connect directly to a shared MySQL database.
-Java App ─── JDBC ───┐
-├── MySQL (cephradb)
-PHP Web ─── PDO ────┘
-│
-├── SSE (Admin updates)
-└── WebSocket (Monitor display)
 
+```mermaid
+flowchart TD
+	subgraph Java App
+		A[JDBC]
+	end
+	subgraph PHP Web
+		B[PDO]
+	end
+	A -- Shared DB --> DB[(MySQL cephradb)]
+	B -- Shared DB --> DB
+	DB -- Notifications --> SSE[Server-Sent Events]
+	DB -- Notifications --> WS[WebSocket]
+	SSE -- Admin Updates --> Admin[Admin Panel]
+	WS -- Monitor Display --> Monitor[Monitor]
+```
 
 ### Real-Time Flow
-- MySQL triggers log updates into a `notifications` table  
-- PHP services read and broadcast updates  
-- Clients receive instant updates without refresh  
+- 🛎️ MySQL triggers log updates into a <code>notifications</code> table
+- 📢 PHP services read and broadcast updates
+- ⚡ Clients receive instant updates without refresh
 
 ---
 
 ## 🧠 Data Structures & Algorithms
 
-### QueueFlow
-- Uses `PriorityQueue<Entry>`
-- Vehicles with battery < 20% are prioritized
-- FIFO preserved within same priority
+<details>
+<summary><b>QueueFlow</b></summary>
 
-### BayManagement
-- Assigns available charging bays dynamically
-- Supports Fast and Normal chargers
+- 🏁 Uses <code>PriorityQueue&lt;Entry&gt;</code>
+- 🔋 Vehicles with battery < 20% are prioritized
+- ⏩ FIFO preserved within same priority
+</details>
 
-### ChargingManager
-- Uses background `Timer`
-- Battery increases 1% per tick
-- Auto-completes at 100%
+<details>
+<summary><b>BayManagement</b></summary>
 
-### Ticket Format
-- `FCH001` — Fast charging  
-- `NCH001` — Normal charging  
-- `FCHP001` / `NCHP001` — Priority tickets  
+- 🪫 Assigns available charging bays dynamically
+- ⚡ Supports Fast and Normal chargers
+</details>
+
+<details>
+<summary><b>ChargingManager</b></summary>
+
+- ⏲️ Uses background <code>Timer</code>
+- 🔋 Battery increases 1% per tick
+- 🏆 Auto-completes at 100%
+</details>
+
+<details>
+<summary><b>Ticket Format</b></summary>
+
+- <code>FCH001</code> — Fast charging
+- <code>NCH001</code> — Normal charging
+- <code>FCHP001</code> / <code>NCHP001</code> — Priority tickets
+</details>
 
 ---
 
 ## 📂 Project Structure
 
-
+```text
 Cephra-QMS/
 ├── src/main/java/cephra/
-│ ├── Admin/
-│ ├── Database/
-│ ├── Frame/
-│ ├── Phone/
-│ └── Launcher.java
+│   ├── Admin/
+│   ├── Database/
+│   ├── Frame/
+│   ├── Phone/
+│   └── Launcher.java
 ├── src/main/resources/
 ├── Appweb/
-│ ├── Admin/
-│ ├── User/
-│ ├── Monitor/
-│ └── shared/
+│   ├── Admin/
+│   ├── User/
+│   ├── Monitor/
+│   └── shared/
 └── pom.xml
-
+```
 
 ---
 
 ## ⚙️ Setup
 
 ### Requirements
-- Java 21+
-- Maven
-- MySQL 8+
-- PHP (local server like Apache/Nginx)
+
+<ul>
+	<li>☕ Java 21+</li>
+	<li>🔨 Maven</li>
+	<li>🗄️ MySQL 8+</li>
+	<li>🐘 PHP (local server like Apache/Nginx)</li>
+</ul>
 
 ---
 
@@ -154,22 +200,20 @@ Cephra-QMS/
 
 Run:
 
-
-Appweb/shared/notifications_setup.sql
-
+<pre><code>Appweb/shared/notifications_setup.sql</code></pre>
 
 ---
 
 ### 2. Configure Web App
 
-Create `.env` file:
+Create <code>.env</code> file:
 
-
+```env
 DB_HOST=127.0.0.1
 DB_NAME=cephradb
 DB_USER=root
 DB_PASSWORD=yourpassword
-
+```
 
 ---
 
@@ -177,49 +221,35 @@ DB_PASSWORD=yourpassword
 
 Edit:
 
-
-src/main/resources/db.properties
-
+<pre><code>src/main/resources/db.properties</code></pre>
 
 Set your database password:
 
-
-dataSource.password=yourpassword
-
+<pre><code>dataSource.password=yourpassword</code></pre>
 
 ---
 
 ### 4. Run Web App
 
-Serve the `Appweb/` folder using your PHP server.
+Serve the <code>Appweb/</code> folder using your PHP server.
 
 ---
 
 ### 5. Run Java App
 
-
+```bash
 mvn exec:java
-
+```
 
 ---
 
 ## 🌐 Access
 
-- Customer: `http://localhost/Cephra/Appweb/User/`  
-- Admin: `http://localhost/Cephra/Appweb/Admin/`  
-- Monitor: `http://localhost/Cephra/Appweb/Monitor/`  
+- 👤 <b>Customer:</b> <a href="http://localhost/Cephra/Appweb/User/">http://localhost/Cephra/Appweb/User/</a>
+- 🛡️ <b>Admin:</b> <a href="http://localhost/Cephra/Appweb/Admin/">http://localhost/Cephra/Appweb/Admin/</a>
+- 🖥️ <b>Monitor:</b> <a href="http://localhost/Cephra/Appweb/Monitor/">http://localhost/Cephra/Appweb/Monitor/</a>
 
 ---
-
-## 📸 Demo / Screenshots
-
-> (Add your screenshots here for portfolio)
-
-Example:
-
-
-
-
 
 
 
@@ -227,23 +257,24 @@ Example:
 
 ## 📊 Future Improvements
 
-- Mobile app (React Native / Flutter)
-- API layer (Spring Boot REST)
-- Cloud deployment (AWS / GCP)
-- Payment gateway integration
-- Predictive queue optimization (AI-based)
+- 📱 Mobile app (React Native / Flutter)
+- 🔗 API layer (Spring Boot REST)
+- ☁️ Cloud deployment (AWS / GCP)
+- 💳 Payment gateway integration
+- 🤖 Predictive queue optimization (AI-based)
 
 ---
 
 ## 👥 Team
 
-- **Usher Kielvin Ponce** — Project Lead, Backend  
-- **Mark Dwayne P. Dela Cruz** — Web UI/UX  
-- **Dizon S. Dizon** — Backend, Database  
-- **Kenji A. Hizon** — Java Frontend  
+| <img src="https://img.icons8.com/color/48/administrator-male.png" width="32"/> | **Usher Kielvin Ponce** | Project Lead, Backend |
+|---|----------------------|----------------------|
+| <img src="https://img.icons8.com/color/48/web-design.png" width="32"/> | **Mark Dwayne P. Dela Cruz** | Web UI/UX |
+| <img src="https://img.icons8.com/color/48/database.png" width="32"/> | **Dizon S. Dizon** | Backend, Database |
+| <img src="https://img.icons8.com/color/48/java-coffee-cup-logo.png" width="32"/> | **Kenji A. Hizon** | Java Frontend |
 
 ---
 
 ## 📄 License
 
-MIT License
+<img src="https://img.shields.io/badge/License-MIT-yellow"/> MIT License
