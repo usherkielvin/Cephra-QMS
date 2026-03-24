@@ -1,6 +1,7 @@
 
+
 <p align="center">
-	<img src="https://img.icons8.com/color/96/ev-plug.png" width="96" alt="Cephra Logo"/>
+	<img src="src/main/resources/cephra/Cephra Images/Applogo.png" width="120" alt="Cephra Logo"/>
 </p>
 
 # <span style="color:#2ecc40;">Cephra QMS</span> — <span style="color:#2980b9;">EV Charging Queue Management System</span>
